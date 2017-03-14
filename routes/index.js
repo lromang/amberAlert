@@ -9,6 +9,7 @@ var pgp      = require('pg-promise');
 var router   = express.Router();
 var db;
 
+
 // Configure Passport
 router.use(expressSession({secret: 'mySecretKey', resave : false , saveUninitialized: false}));
 router.use(passport.initialize());
