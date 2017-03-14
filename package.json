@@ -1,0 +1,23 @@
+{
+  "name": "amber",
+  "version": "1.0.0",
+  "description": "Amber alert",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lromang/amberAlert.git"
+  },
+  "keywords": [
+    "amber",
+    "alert"
+  ],
+  "author": "Luis Manuel Román García",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lromang/amberAlert/issues"
+  },
+  "homepage": "https://github.com/lromang/amberAlert#readme"
+}
