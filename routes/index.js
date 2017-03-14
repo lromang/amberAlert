@@ -73,7 +73,7 @@ var isAuthenticated = function(req, res, next){
 }
 
 // Verify is user is not authenticated
-var isNotAuthenitcated = function(req, res, next){
+var isNotAuthenticated = function(req, res, next){
   if(req.isUnauthenticated())
     return next();
   res.redirect('/principal');
@@ -101,7 +101,7 @@ router.post('/signout', function(req, res){
 });
 
 // Get login
-router.get('/', isNotAuthenitcated, function(req, res, next){
+router.get('/', isNotAuthenticated, function(req, res, next){
   res.render('login', {title: '', message: req.flash('message')});
 });
 
@@ -109,3 +109,6 @@ router.get('/', isNotAuthenitcated, function(req, res, next){
 router.get('/principal', isAuthenticated, function(req, res){
   res.render('principal', {title: 'alert', user: req.user, section: 'principal'});
 });
+
+
+module.exports =  routes;
