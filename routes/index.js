@@ -20,95 +20,102 @@ router.use(flash());
 
 // Login
 passport.use('login', new LocalStrategy({
-  passReqToCallback : true
-},
-    function(req, username, password, done){
-    db.oneOrNone('select * from usuarios where usuario = $1', [username]).then(function(user){
-      if(!user){
-        console.log('User not found with username: ' + username);
-        return done(null, false, req.flash('message', 'Usuario no registrado'));
-      }
-      if(!isValidPassword(user, password)){
-        console.log('Password not valid');
-        return done(null, false, req.flash('message', 'Contraseña no válida'));
-      }
-      return done(null, user);
-    }).catch(function(error){
-      console.log(error);
-      return done(error);
-    });
+        passReqToCallback : true
+    },
+    function(req, username, password, done) {
+        // check in postgres if a user with username exists or not
+        db.oneOrNone('select * from usuarios where usuario = $1', [ username ]).then(function (user) {
+            // session
+
+            if (!user){
+                console.log('User Not Found with username '+username);
+                return done(null, false, req.flash('message', 'Usuario no registrado'));
+            }
+
+            if (!isValidPassword(user ,password)){
+                console.log('Invalid password');
+                return done(null, false, req.flash('message', 'Contraseña no válida')); // redirect back to login page
+            }
+
+            return done(null,user);
+        }).catch(function (error) {
+            console.log(error);
+            return done(error);
+        });
     }
 ));
 
-
-// Check if a password is valid.
 var isValidPassword = function(user, password){
     return bCrypt.compareSync(password, user.contrasena);
-}
+};
 
 
-//  Serialize and deserialize users.
-passport.serializeUser(function(user, done){
-  console.log('serializing user: ');
-  console.log(user);
-  done(nulll, user.id);
+// Passport needs to be able to serialize and deserialize users to support persistent login sessions
+passport.serializeUser(function(user, done) {
+    console.log('serializing user: ');
+    console.log(user);
+    done(null, user.id);
 });
 
-passport.deserializeUser(function(id, done){
-  db.one('select * from usuarios where id = $1',  [
-      id
-  ]).then(function(user){
-    done(null, user);
-  }).catch(function (error){
-    done(error);
-    console.log(error);
-  })
+passport.deserializeUser(function(id, done) {
+    db.one(' select * from usuarios where id = $1',[
+        id
+    ]).then(function (user) {
+        done (null, user);
+    }).catch(function (error) {
+        done(error);
+        console.log(error);
+    });
 });
 
-// Verify if user is authenticated
-var isAuthenticated = function(req, res, next){
-  if (req.isAuthenticated())
-    return next();
-  res.redirect('/');
-}
+var isAuthenticated = function (req, res, next) {
+    if (req.isAuthenticated())
+        return next();
+    res.redirect('/');
+};
 
-// Verify is user is not authenticated
-var isNotAuthenticated = function(req, res, next){
-  if(req.isUnauthenticated())
-    return next();
-  res.redirect('/principal');
-}
+var isNotAuthenticated = function (req, res, next) {
+    if (req.isUnauthenticated())
+        return next();
+    res.redirect('/principal');
+};
 
-// Generate hash using bCrypt
+
+// Generates hash using bCrypt
 var createHash = function(password){
-  return bCrypt.hashSync(password, bCrypt.genSaltSync(10), null);
-}
-
+    return bCrypt.hashSync(password, bCrypt.genSaltSync(10), null);
+};
 
 /* Exec */
 
 // Login post
 router.post('/login', passport.authenticate('login', {
-    succesRedirect: '/principal',
+    successRedirect: '/principal',
     failureRedirect:'/',
     failureFlash : true
 }));
 
-// Logout post
-router.post('/signout', function(req, res){
-  req.logout();
-  res.redirect('/');
+/* Handle Login POST */
+router.post('/login', passport.authenticate('login', {
+    successRedirect: '/principal',
+    failureRedirect: '/',
+    failureFlash : true
+}));
+
+/* Handle Logout */
+router.get('/signout', function(req, res) {
+    req.logout();
+    res.redirect('/');
 });
 
-// Get login
-router.get('/', isNotAuthenticated, function(req, res, next){
-  res.render('login', {title: '', message: req.flash('message')});
+
+/* GET login page. */
+router.get('/', isNotAuthenticated, function(req, res, next) {
+    res.render('login', { title: '', message : req.flash('message') });
 });
 
-// Get Principal
-router.get('/principal', isAuthenticated, function(req, res){
-  res.render('principal', {title: 'alert', user: req.user, section: 'principal'});
+router.get('/principal', isAuthenticated, function (req, res) {
+    res.render('principal', { title: 'Tienda', user: req.user, section: 'principal'});
 });
-
 
 module.exports =  router;
